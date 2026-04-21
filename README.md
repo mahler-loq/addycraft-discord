@@ -1,7 +1,8 @@
 # AddyCraft Discord Bot
 ---
 ## Particular Files:
-`src/cogs/dummy.py` -> Template for new cogs
+
+- `src/cogs/dummy.py` -> Template for new cogs
 ---
 ## Breakdown of the project's root dir
 ```
