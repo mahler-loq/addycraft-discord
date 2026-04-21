@@ -1,5 +1,8 @@
 # AddyCraft Discord Bot
 
+Developed by: Mahler von Loqerlien
+Deployed/Hosted by: Adzel Firestar
+
 ## Particular Files:
 
 - `src/cogs/dummy.py` -> Template for new cogs
