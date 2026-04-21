@@ -2,14 +2,17 @@ from discord.ext import commands
 import os, dotenv, discord, logging, glob, traceback
 import src.cnst as cnst
 dotenv.load_dotenv()
-logging.basicConfig(level=logging.INFO)
+
+logging.basicConfig(level=logging.INFO,
+                    format="[%(levelname)s] %(name)s: %(message)s")
 rootlogger = logging.getLogger()
+COG_GLOB = "./src/cogs/*.py"
 
 class Bot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=("-"),intents=discord.Intents.all()) # .all() will be changed, this is for testing
     async def setup_hook(self):
-        for cogfile in glob.glob("./src/cogs/*.py"):
+        for cogfile in glob.glob(COG_GLOB):
             # Attempts to load each functionality in the bot
             try:
                 await self.load_extension("src.cogs."+cogfile.removesuffix(".py"))
