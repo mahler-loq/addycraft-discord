@@ -1,5 +1,5 @@
 # This file contains hard-coded variables that are used across the bot,
-# This is to avoid hardcoding things in multiple places.
+# this is to avoid hardcoding things in multiple places.
 
 developers_uid = {
     "mahler": 1383041519371685958,
