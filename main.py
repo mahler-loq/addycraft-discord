@@ -13,15 +13,15 @@ class Bot(commands.Bot):
             # Attempts to load each functionality in the bot
             try:
                 await self.load_extension("src.cogs."+cogfile.removesuffix(".py"))
-            except Exception:
+            except Exception as e:
                 rootlogger.error(f"Error loading cog {cogfile}:")
-                rootlogger.error("".join(traceback.format_exception()))
+                rootlogger.error("".join(traceback.format_exception(e)))
     async def on_ready(self):
         rootlogger.info("Logged in successfully as {}!".format(self.user))
         rootlogger.info("Hello from on_ready coroutine, preparing everything...")
         rootlogger.info("syncing command tree with discord...")
         try:await self.tree.sync()
-        except Exception:rootlogger.error(traceback.format_exc())
+        except Exception as e:rootlogger.error(traceback.format_exception(e))
         rootlogger.info("tree synced successfully!")
         rootlogger.info("on_ready done!")
 if __name__ == "__main__":
@@ -29,9 +29,8 @@ if __name__ == "__main__":
     try:
         rootlogger.info("--- START ---")
         if not os.getenv("TOKEN"):
-            rootlogger.error("no TOKEN found in environment! please add a .env file with the token, or set the environment variable in another way.")
             raise Exception("no TOKEN found in environment!")
         bot.run(os.getenv("TOKEN"))
-    except Exception:
+    except Exception as e:
         rootlogger.error("Error starting bot:")
-        rootlogger.error("".join(traceback.format_exception()))
+        rootlogger.error("".join(traceback.format_exception(e)))
