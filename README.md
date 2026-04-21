@@ -1,6 +1,7 @@
 # AddyCraft Discord Bot
 
 Developed by: Mahler von Loqerlien
+
 Deployed/Hosted by: Adzel Firestar
 
 ## Particular Files:
