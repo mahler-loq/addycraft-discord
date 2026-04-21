@@ -19,7 +19,7 @@ Deployed/Hosted by: Adzel Firestar
 ```
 - `main.py` -> main script, starts the dance party
 - `ongoing_work_notes.md` -> self explainatory (me ranting about what i have to do)
-- `requirements.txt` PIP python package dependencies list
+- `requirements.txt` dependency list
 - `src/` -> the actual source files :)
 
 THIS FILE IS UNFINISHED!!!
