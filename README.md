@@ -13,9 +13,9 @@
 ├── requirements.txt
 └── src
 ```
-- `main.py` -> main script, start
-- `ongoing_work_notes.md` -> Self explainatory
+- `main.py` -> main script, starts the dance party
+- `ongoing_work_notes.md` -> self explainatory (me ranting about what i have to do)
 - `requirements.txt` PIP python package dependencies list
-- `src/` -> sourcefiles
+- `src/` -> the actual source files :)
 
 THIS FILE IS UNFINISHED!!!
