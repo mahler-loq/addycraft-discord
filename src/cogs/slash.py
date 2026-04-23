@@ -99,6 +99,8 @@ class BasicSlashCommands(commands.Cog):
         #~ begin block early return
         if not is_administrative(interaction.user):
             return await interaction.response.send_message(noperm, ephemeral=True)
+        if is_administrative(user) and not is_god(interaction.user):
+            return await interaction.response.send_message("You cannot fire this user, they are at a higher or equal staff rank than you.", ephemeral=True)
         #~ finish block early return
         try:
             self._log("{} fired {}".format(interaction.user.display_name, user.display_name))
