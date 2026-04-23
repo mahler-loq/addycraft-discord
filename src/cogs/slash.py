@@ -101,15 +101,17 @@ class BasicSlashCommands(commands.Cog):
             return await interaction.response.send_message(noperm, ephemeral=True)
         if is_administrative(user) and not is_god(interaction.user):
             return await interaction.response.send_message("You cannot fire this user, they are at a higher or equal staff rank than you.", ephemeral=True)
+        if is_not_staff(user) and not is_helper_strict(user):
+            return await interaction.response.send_message("You cannot fire this user, they are currently not a staff member.", ephemeral=True)
         #~ finish block early return
         try:
             self._log("{} fired {}".format(interaction.user.display_name, user.display_name))
             await user.remove_roles(*[interaction.guild.get_role(role_id) for role_id in helper_role_ids+mod_role_ids+admin_role_ids+owner_role_ids], reason="Fired from staff by {}".format(interaction.user.display_name))
+            await user.send(view=ui.LayoutView(UserFiredContainer(user, interaction.user, reason), timeout=0))
             try:await (self.bot.get_guild(staff_server_id)).kick(user, reason="Fired from staff by {}".format(interaction.user.display_name))
             except Exception as e:
                 log_exc(self._logger, e)
                 self._logger.warning("Failed to kick user from staff server, they may still be there.")
-            await user.send(view=ui.LayoutView(UserFiredContainer(user, interaction.user, reason), timeout=0))
             await interaction.response.send_message("`{}` fired successfully for: `{}`".format(user.display_name, reason if reason is not None else "No reason provided."), ephemeral=True)
         except Exception as e:
             log_exc(self._logger, e)
@@ -122,7 +124,7 @@ class BasicSlashCommands(commands.Cog):
         if is_administrative(user):
             return await interaction.response.send_message("You cannot promote this user, they are already at the highest permission tier they may attain.", ephemeral=True)
         if is_not_staff(user):
-            return await interaction.response.send_message("You cannot promote this user, they are currently not a staff member, perhaps you wanted to `/hire` them?", ephemeral=True)
+            return await interaction.response.send_message("You cannot promote this user, they are currently not a staff member, perhaps you want to `/hire` them?", ephemeral=True)
         #~ finish block early return
         try:
             tier = determine_permission_tier(user)
