@@ -24,4 +24,3 @@ helper_role_ids = [1451038323027214377, 1451282482480807980]
 
 noperm = "You do not have permission to use this command."
 noperm_generic = "You do not have permission to perform this action."
-#TODO: add role IDs, helper functions for determining ranks, etc.
