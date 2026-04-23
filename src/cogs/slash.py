@@ -169,8 +169,8 @@ class BasicSlashCommands(commands.Cog):
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while demoting the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
-    @app_commands.command(name="clear", description="Clears a specified number of messages from the current channel.")
-    async def clear(self, interaction: discord.Interaction, amount: int):
+    @app_commands.command(name="purge", description="Clears a specified number of messages from the current channel.")
+    async def purge(self, interaction: discord.Interaction, amount: int):
         #~ begin block early return
         if not is_moderator(interaction.user):
             return await interaction.response.send_message(noperm, ephemeral=True)
