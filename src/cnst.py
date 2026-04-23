@@ -7,7 +7,7 @@ developers_uid = {
 }
 developers = list(developers_uid.values())
 # hardcoded user IDs of the active developers
-# these are used for the internal permission system, and set to always have the highest permission tier (0)
+# these are used for the internal permission system, see config.py and helpers.py for more details
 # this is strictly for testing purposes
 
 main_server_id = 1451022861706989712
