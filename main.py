@@ -10,8 +10,8 @@ class ColorFormatter(logging.Formatter):
     COLORS = {
         logging.DEBUG: "\033[36m",
         logging.INFO: "\033[32m",
-        logging.WARNING: "\033[33m",
-        logging.ERROR: "\033[31m",
+        logging.WARNING: "\033[1;33m",
+        logging.ERROR: "\033[1;31m",
         logging.CRITICAL: "\033[41m",
     }
     RESET = "\033[0m"
