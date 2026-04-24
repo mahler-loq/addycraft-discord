@@ -13,6 +13,7 @@ class Bot(commands.Bot):
         await self.on_ready_lock.acquire() # so cogs don't run their on_ready code before the root on_ready has finished
         for cogfile in glob.glob(COG_GLOB):
             # Attempts to load each functionality in the bot (src/cogs/*.py), log to console on fail
+            if cogfile.endswith("__init__.py") or not cogfile:continue # skip __init__.py files and empty results
             try:
                 await self.load_extension("src.cogs."+cogfile.removesuffix(".py"))
             except Exception as e:
@@ -33,4 +34,4 @@ class Bot(commands.Bot):
             helpers.log_exc(rootl,e)
         rootl.info("tree synced successfully!")
         rootl.info("on_ready done!")
-        await self.on_ready_lock.release() # allow cog on_ready functions to run if they need to
+        self.on_ready_lock.release() # allow cog on_ready functions to run if they need to

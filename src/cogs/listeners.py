@@ -12,18 +12,21 @@ class MainCustomizedEventListener(commands.Cog):
         self._logger.info(msg)
     @commands.Cog.listener()
     async def on_ready(self):
-        await self.bot.on_ready_lock.acquire() # run cog on_ready after root on_ready finishes
-        self._log("Hello from MainCustomizedEventListener on_ready event listener!")
-        if AUTOLEAVE_UNTRUSTED_SERVERS or STRICT_SECURITY:
-            for guild in self.bot.guilds:
-                if guild.id not in (main_server_id, staff_server_id):
-                    self._logger.warning("Bot is in an untrusted server on startup, leaving it automatically due to AUTOLEAVE_UNTRUSTED_SERVERS or STRICT_SECURITY being set.")
-                    try:await guild.leave()
-                    except Exception as e:
-                        self._logger.warning("Failed to leave untrusted server: {}".format(e))
-                        log_exc(self._logger, e)
-        else:
-            self._log("Nothing to do.")
+        try:
+            await self.bot.on_ready_lock.acquire() # run cog on_ready after root on_ready finishes
+            self._log("Hello from MainCustomizedEventListener on_ready event listener!")
+            if AUTOLEAVE_UNTRUSTED_SERVERS or STRICT_SECURITY:
+                for guild in self.bot.guilds:
+                    if guild.id not in (main_server_id, staff_server_id):
+                        self._logger.warning("Bot is in an untrusted server on startup, leaving it automatically due to AUTOLEAVE_UNTRUSTED_SERVERS or STRICT_SECURITY being set.")
+                        try:await guild.leave()
+                        except Exception as e:
+                            self._logger.warning("Failed to leave untrusted server: {}".format(e))
+                            log_exc(self._logger, e)
+            else:
+                self._log("Nothing to do.")
+        finally:
+            self.bot.on_ready_lock.release() # release lock so cog on_ready functions can run if they need to
     @commands.Cog.listener()
     async def on_memeber_join(self, member:discord.Member):
         joined_server="main server" if member.guild.id==main_server_id else "staff server" if member.guild.id==staff_server_id else "unknown server"
