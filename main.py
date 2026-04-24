@@ -17,9 +17,9 @@ class ColorFormatter(logging.Formatter):
     RESET = "\033[0m"
     def format(self, record):
         color = self.COLORS.get(record.levelno, "")
-        msg = super().format(record)
-        return f"{color}{msg}{self.RESET}"
-handler.setFormatter(ColorFormatter("%(asctime)s %(levelname)-8s %(name)s %(message)s","%Y-%m-%d %H:%M:%S"))
+        record.levelname = f"{color}{record.levelname}{self.RESET}"
+        return super().format(record)
+handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s","%Y-%m-%d %H:%M:%S"))
 rootl.handlers.clear()
 rootl.addHandler(handler)
 rootl.setLevel(logging.INFO)
