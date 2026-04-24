@@ -1,6 +1,7 @@
 
 # Contains helper functions n stuff
-import traceback,logging,discord.ui as ui,discord,cnst
+import traceback,logging,discord.ui as ui,discord
+from . import cnst as cnst
 from config import *
 # Internal permission system helpers:
 
