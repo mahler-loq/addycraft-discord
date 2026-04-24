@@ -6,7 +6,7 @@ from config import *
 dotenv.load_dotenv()
 rootl = logging.getLogger()
 logging.basicConfig(level=logging.INFO,
-                    format="[%(levelname)s] %(name)s: %(message)s")
+                    format="<%(asctime)s> [%(levelname)s] %(name)s: %(message)s")
 logging.getLogger("discord.client").setLevel(logging.WARNING)
 logging.getLogger("discord.gateway").setLevel(logging.WARNING)
 
