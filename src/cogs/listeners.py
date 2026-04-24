@@ -3,7 +3,7 @@ import os, dotenv, discord, logging
 from src.cnst import *
 from src.helpers import *
 from config import *
-import bot_class
+import src.bot_class as bot_class
 class MainCustomizedEventListener(commands.Cog):
     def __init__(self, bot:bot_class.Bot):
         self.bot = bot
