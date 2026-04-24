@@ -2,9 +2,9 @@ import traceback
 from discord.ext import commands
 from discord import app_commands
 import os, dotenv, discord, logging, discord.ui as ui
-from helpers import *
-from cnst import *
-import bot_class
+from src.helpers import *
+from src.cnst import *
+import src.bot_class as bot_class
 class SeparatedTextContainer(ui.Container):
     def __init__(self, title:str, text:str, ping:discord.Role|discord.User=None, author:str=None):
         super().__init__()

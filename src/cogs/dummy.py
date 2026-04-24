@@ -1,5 +1,6 @@
 from discord.ext import commands
-import os, dotenv, discord, logging, bot_class
+import os, dotenv, discord, logging
+from src import bot_class
 
 class DummyCog(commands.Cog):
     def __init__(self, bot:bot_class.Bot):

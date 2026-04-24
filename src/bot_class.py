@@ -1,5 +1,5 @@
 from discord.ext import commands
-import os, dotenv, discord, logging, glob, traceback, asyncio, config, src.bot_class as bot_class
+import os, dotenv, discord, logging, glob, traceback, asyncio, config
 import src.cnst as cnst
 import src.helpers as helpers
 from config import *
