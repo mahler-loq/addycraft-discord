@@ -18,6 +18,7 @@ class ColorFormatter(logging.Formatter):
     def format(self, record):
         color = self.COLORS.get(record.levelno, "")
         record.levelname = f"{color}{record.levelname}{self.RESET}"
+        record.name = f"\033[1;36m{record.name}{self.RESET}"
         return super().format(record)
 handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s","%Y-%m-%d %H:%M:%S"))
 rootl.handlers.clear()
