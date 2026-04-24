@@ -5,11 +5,26 @@ import src.helpers as helpers
 from config import *
 dotenv.load_dotenv()
 rootl = logging.getLogger()
-logging.basicConfig(level=logging.INFO,
-                    format="<%(asctime)s> [%(levelname)s] %(name)s: %(message)s")
+handler = logging.StreamHandler()
+class ColorFormatter(logging.Formatter):
+    COLORS = {
+        logging.DEBUG: "\033[36m",
+        logging.INFO: "\033[32m",
+        logging.WARNING: "\033[33m",
+        logging.ERROR: "\033[31m",
+        logging.CRITICAL: "\033[41m",
+    }
+    RESET = "\033[0m"
+    def format(self, record):
+        color = self.COLORS.get(record.levelno, "")
+        msg = super().format(record)
+        return f"{color}{msg}{self.RESET}"
+handler.setFormatter(ColorFormatter("%(asctime)s %(levelname)-8s %(name)s %(message)s","%Y-%m-%d %H:%M:%S"))
+rootl.handlers.clear()
+rootl.addHandler(handler)
+rootl.setLevel(logging.INFO)
 logging.getLogger("discord.client").setLevel(logging.WARNING)
 logging.getLogger("discord.gateway").setLevel(logging.WARNING)
-
 if __name__ == "__main__":
     bot = bot_class.Bot()
     try:
