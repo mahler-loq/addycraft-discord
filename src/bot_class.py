@@ -15,7 +15,7 @@ class Bot(commands.Bot):
             # Attempts to load each functionality in the bot (src/cogs/*.py), log to console on fail
             if cogfile.endswith("__init__.py") or not cogfile:continue # skip __init__.py files and empty results
             try:
-                await self.load_extension("src.cogs."+cogfile.removesuffix(".py"))
+                await self.load_extension("src.cogs."+os.path.basename(cogfile).removesuffix(".py"))
             except Exception as e:
                 rootl.error(f"Error loading cog {cogfile}:")
                 helpers.log_exc(rootl,e)
