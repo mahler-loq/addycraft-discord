@@ -7,7 +7,8 @@ dotenv.load_dotenv()
 rootl = logging.getLogger()
 logging.basicConfig(level=logging.INFO,
                     format="[%(levelname)s] %(name)s: %(message)s")
-logging.getLogger("discord").setLevel(logging.WARNING)
+logging.getLogger("discord.client").setLevel(logging.WARNING)
+logging.getLogger("discord.gateway").setLevel(logging.WARNING)
 
 if __name__ == "__main__":
     bot = bot_class.Bot()
