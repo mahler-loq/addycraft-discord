@@ -27,6 +27,10 @@ rootl.setLevel(logging.INFO)
 logging.getLogger("discord.client").setLevel(logging.WARNING)
 logging.getLogger("discord.gateway").setLevel(logging.WARNING)
 if __name__ == "__main__":
+    rootl.info("INFO")
+    rootl.warning("WARNING")
+    rootl.error("ERROR")
+    rootl.critical("CRITICAL")
     bot = bot_class.Bot()
     try:
         rootl.info("--- START ---")
