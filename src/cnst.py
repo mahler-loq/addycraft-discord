@@ -13,6 +13,8 @@ developers = list(developers_uid.values())
 main_server_id = 1451022861706989712
 staff_server_id = 1451282482103062653
 
+music_queue_channel_ids = [1497552355535749190,1497552403782963310]
+
 staff_entry_channel_id = 1451022863271329814
 mainserver_entry_channel_id = 1476358868018659429
 

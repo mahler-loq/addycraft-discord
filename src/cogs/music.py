@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord import FFmpegOpusAudio, app_commands
 import os, dotenv, discord, asyncio, logging, yt_dlp, ffmpeg
 from src import bot_class
+from src.cnst import *
 from collections import deque
 def _extract(query:str, ytdlp_opts:dict):
     with yt_dlp.YoutubeDL(ytdlp_opts) as ytdlp:
@@ -29,18 +30,21 @@ class Music(commands.Cog):
         self._logger.info(msg)
     async def search_youtube(self, query:str):
         return await(asyncio.get_running_loop()).run_in_executor(None, _extract, query, self.ytdlp_opts)
-    async def play_next(self, voice_client:discord.VoiceClient, guild_id:int, channel:discord.TextChannel):
+    async def broadcast_queue_update(self, message:str, guild_id:int):
+        message="[**{}**] {}".format(self.bot.get_guild(id).name if self.bot.get_guild(id) else "Unknown server", message)
+        await asyncio.gather(*[self.bot.get_channel(id).send(message)for id in music_queue_channel_ids if self.bot.get_channel(id)],return_exceptions=True)
+    async def play_next(self, voice_client:discord.VoiceClient, guild_id:int):
         if self.queues.get(guild_id):
             url,title=self.queues[guild_id].popleft()
             source = FFmpegOpusAudio(url, **self.ffmpeg_opts)
             def after_playing(error):
                 if error:
                     self._log("Error playing audio: {}".format(error))
-                asyncio.run_coroutine_threadsafe(self.play_next(voice_client, guild_id, channel), self.bot.loop)
+                asyncio.run_coroutine_threadsafe(self.play_next(voice_client, guild_id), self.bot.loop)
             voice_client.play(source,after=after_playing)
-            asyncio.create_task(channel.send("Now playing: **{}**".format(title)))
+            asyncio.create_task(self.broadcast_queue_update("Now playing: **{}**".format(title),guild_id))
         else:
-            await channel.send("Queue is empty, leaving voice channel.")
+            await self.broadcast_queue_update("Queue is empty, leaving voice channel.",guild_id)
             await voice_client.disconnect()
             self.queues[guild_id] = deque()
     @music.command(name="play", description="Plays a song from youtube")
@@ -72,7 +76,7 @@ class Music(commands.Cog):
             await interaction.followup.send("Added **{}** to the queue.".format(title))
         else:
             await interaction.followup.send("Playing **{}**.".format(title))
-            await self.play_next(voice_client, interaction.guild_id, interaction.channel)
+            await self.play_next(voice_client, interaction.guild_id)
     @music.command(name="skip", description="Skips the currently playing song")
     async def skip(self, interaction:discord.Interaction):
         if interaction.guild.voice_client and (interaction.guild.voice_client.is_playing() or interaction.guild.voice_client.is_paused()):
