@@ -68,6 +68,8 @@ def is_staff(user:discord.Member):
         return determine_permission_tier(user) <= 2
 def is_not_staff(user:discord.Member):
     return determine_permission_tier(user) == 4
+def is_dj(user:discord.Member):
+    return any(role.id in cnst.dj_role_ids for role in user.roles) or is_administrative(user)
 
 # Misc:
 

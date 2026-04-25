@@ -5,6 +5,7 @@ from src import bot_class
 from fixedstr import *
 from src.cnst import *
 from collections import deque
+from src.helpers import *
 def _extract(query:str, ytdlp_opts:dict):
     with yt_dlp.YoutubeDL(ytdlp_opts) as ytdlp:
         return ytdlp.extract_info(query, download=False)
@@ -54,6 +55,7 @@ class Music(commands.Cog):
         await interaction.response.defer()
         self._log("play command invoked with query: {}".format(query))
         #~ begin block early return
+        if not is_dj(interaction.user):return interaction.response.send_message(no_dj,ephemeral=True)
         if interaction.user.voice is None:
             return await interaction.followup.send("You must be in a voice channel to use this command.",ephemeral=True)
         vc = interaction.user.voice.channel
@@ -81,6 +83,9 @@ class Music(commands.Cog):
             await self.play_next(voice_client, interaction.guild_id)
     @music.command(name="skip", description="Skips the currently playing song")
     async def skip(self, interaction:discord.Interaction):
+        #~ begin block early return
+        if not is_dj(interaction.user):return interaction.response.send_message(no_dj,ephemeral=True)
+        #~ finish block early return
         if interaction.guild.voice_client and (interaction.guild.voice_client.is_playing() or interaction.guild.voice_client.is_paused()):
             interaction.guild.voice_client.stop()
             await interaction.response.send_message("Skipped the current song.")
@@ -90,6 +95,7 @@ class Music(commands.Cog):
     async def pause(self, interaction:discord.Interaction):
         voice_client = interaction.guild.voice_client
         #~ begin block early return
+        if not is_dj(interaction.user):return interaction.response.send_message(no_dj,ephemeral=True)
         if voice_client is None:
             return await interaction.response.send_message(no_vcl,ephemeral=True)
         if not voice_client.is_playing():
@@ -101,6 +107,7 @@ class Music(commands.Cog):
     async def resume(self, interaction:discord.Interaction):
         voice_client = interaction.guild.voice_client
         #~ begin block early return
+        if not is_dj(interaction.user):return interaction.response.send_message(no_dj,ephemeral=True)
         if voice_client is None:
             return await interaction.response.send_message(no_vcl,ephemeral=True)
         if not voice_client.is_paused():
@@ -111,6 +118,7 @@ class Music(commands.Cog):
     @music.command(name="queue", description="Shows the current music queue")
     async def queue(self, interaction: discord.Interaction):
         gid = interaction.guild_id
+        if not is_dj(interaction.user):return interaction.response.send_message(no_dj,ephemeral=True)
         if gid not in self.queues or not self.queues[gid]:
             return await interaction.response.send_message("The queue is currently empty.", ephemeral=True)
         queue = list(self.queues[gid])
@@ -123,6 +131,7 @@ class Music(commands.Cog):
         await interaction.response.defer()
         voice_client = interaction.guild.voice_client
         #~ begin block early return
+        if not is_dj(interaction.user):return interaction.response.send_message(no_dj,ephemeral=True)
         if not voice_client:
             return await interaction.followup.send(no_vcl,ephemeral=True)
         #~ finish block early return
@@ -136,6 +145,8 @@ class Music(commands.Cog):
         await interaction.response.defer()
         voice_client = interaction.guild.voice_client
         #~ begin block early return
+        if not is_dj(interaction.user):return interaction.response.send_message(no_dj,ephemeral=True)
+
         if not voice_client:
             return await interaction.followup.send(no_vcl,ephemeral=True)
         #~ finish block early return
