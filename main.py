@@ -24,9 +24,9 @@ handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(name)s: %(mes
 rootl.handlers.clear()
 rootl.addHandler(handler)
 rootl.setLevel(logging.INFO)
-logging.getLogger("discord.client").setLevel(logging.WARNING)
-logging.getLogger("discord.gateway").setLevel(logging.WARNING)
-logging.getLogger("discord").setLevel(logging.WARNING)
+for name in logging.root.manager.loggerDict:
+    if name.startswith("discord"):
+        logging.getLogger(name).setLevel(logging.CRITICAL)
 logging.getLogger("discord.app_commands.tree").setLevel(logging.CRITICAL)
 if __name__ == "__main__":
     rootl.info("INFO")
