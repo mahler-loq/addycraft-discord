@@ -14,7 +14,7 @@ class MainCustomizedEventListener(commands.Cog):
     async def on_ready(self):
         try:
             await self.bot.on_ready_lock.acquire() # run cog on_ready after root on_ready finishes
-            self._log("Hello from MainCustomizedEventListener on_ready event listener!")
+            self._log("Hello from {} on_ready event listener!".format(self.__class__.__name__))
             if AUTOLEAVE_UNTRUSTED_SERVERS or STRICT_SECURITY:
                 for guild in self.bot.guilds:
                     if guild.id not in (main_server_id, staff_server_id):
@@ -30,6 +30,20 @@ class MainCustomizedEventListener(commands.Cog):
         finally:
             self._log("on_ready finished, releasing lock...")
             self.bot.on_ready_lock.release() # release lock so cog on_ready functions can run if they need to
+    @commands.Cog.listener()
+    async def on_guild_join(self,guild:discord.Guild):
+        if AUTOLEAVE_UNTRUSTED_SERVERS or STRICT_SECURITY:
+            self._logger.warning("Bot has joined an untrusted server, leaving it automatically due to AUTOLEAVE_UNTRUSTED_SERVERS or STRICT_SECURITY being set.")
+            self._logger.warning("\tServer name: {}".format(guild.name))
+            self._logger.warning("\tServer ID: {}".format(guild.id))
+            try:await guild.leave()
+            except Exception as e:
+                self._logger.warning("Failed to leave untrusted server: {}".format(e))
+                log_exc(self._logger, e)
+        else:
+            self._log("Bot joined server:")
+            self._log("\tServer name: {}".format(guild.name))
+            self._log("\tServer ID: {}".format(guild.id))
     @commands.Cog.listener()
     async def on_memeber_join(self, member:discord.Member):
         joined_server="main server" if member.guild.id==main_server_id else "staff server" if member.guild.id==staff_server_id else "unknown server"
