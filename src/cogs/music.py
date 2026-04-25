@@ -107,6 +107,16 @@ class Music(commands.Cog):
         #~ finish block early return
         voice_client.resume()
         await interaction.response.send_message("Resumed the current song.")
+    @music.command(name="queue", description="Shows the current music queue")
+    async def queue(self, interaction: discord.Interaction):
+        gid = interaction.guild_id
+        if gid not in self.queues or not self.queues[gid]:
+            return await interaction.response.send_message("The queue is currently empty.", ephemeral=True)
+        queue = list(self.queues[gid])
+        msg = "\n".join("[{}] **{}**".format(i+1,title)for i,(_,title)in enumerate(queue[:10]))
+        if len(queue) > 10:
+            msg += "\n...and {} more.".format(len(queue)-10)
+        await interaction.response.send_message("Current queue:\n{}".format(msg))
     @music.command(name="stop", description="Leaves the voice channel and clears the queue")
     async def stop(self, interaction:discord.Interaction):
         await interaction.response.defer()
