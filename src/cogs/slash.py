@@ -74,7 +74,7 @@ class BasicSlashCommands(commands.Cog):
         #~ finish block early return
         try:
             cont = SeparatedTextContainer(title, text, ping, interaction.user.display_name)
-            await channel.send(view=ui.LayoutView(cont,timeout=0))
+            await channel.send(view=ui.LayoutView(timeout=0).add_item(cont))
             await interaction.response.send_message("Announcement sent successfully!", ephemeral=True)
         except Exception as e:
             log_exc(self._logger, e)
@@ -90,7 +90,7 @@ class BasicSlashCommands(commands.Cog):
         try:
             self._log("{} hired {}".format(interaction.user.display_name, user.display_name))
             url=(await(self.bot.get_channel(staff_entry_channel_id)).create_invite(max_uses=1, max_age=0)).url
-            await user.send(view=ui.LayoutView(UserHiredContainer(user, interaction.user, url),timeout=0))
+            await user.send(view=ui.LayoutView(timeout=0).add_item(UserHiredContainer(user, interaction.user, url)))
             await user.add_roles(interaction.guild.get_role(helper_role_ids[0]), reason="Hired as helper by {}".format(interaction.user.display_name))
         except Exception as e:
             log_exc(self._logger, e)
@@ -109,7 +109,7 @@ class BasicSlashCommands(commands.Cog):
         try:
             self._log("{} fired {}".format(interaction.user.display_name, user.display_name))
             await user.remove_roles(*[interaction.guild.get_role(role_id) for role_id in helper_role_ids+mod_role_ids+admin_role_ids+owner_role_ids], reason="Fired from staff by {}".format(interaction.user.display_name))
-            await user.send(view=ui.LayoutView(UserFiredContainer(user, interaction.user, reason), timeout=0))
+            await user.send(view=ui.LayoutView(timeout=0).add_item(UserFiredContainer(user, interaction.user, reason)))
             try:await (self.bot.get_guild(staff_server_id)).kick(user, reason="Fired from staff by {}".format(interaction.user.display_name))
             except Exception as e:
                 log_exc(self._logger, e)
@@ -139,7 +139,7 @@ class BasicSlashCommands(commands.Cog):
                 for idx,server in enumerate((staff_server_id,main_server_id)):
                     await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(admin_role_ids[idx]), reason="Promoted to admin by {}".format(interaction.user.display_name))
                     await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Promoted from moderator by {}".format(interaction.user.display_name))
-            await user.send(view=ui.LayoutView(UserPromotedContainer(user, interaction.user, tier+1, reason), timeout=0))
+            await user.send(view=ui.LayoutView(timeout=0).add_item(UserPromotedContainer(user, interaction.user, tier+1, reason), timeout=0))
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while promoting the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
@@ -166,7 +166,7 @@ class BasicSlashCommands(commands.Cog):
                 for idx,server in enumerate((staff_server_id,main_server_id)):
                     await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Demoted from moderator by {}".format(interaction.user.display_name))
                     await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(helper_role_ids[idx]), reason="Demoted to helper by {}".format(interaction.user.display_name))
-            await user.send(view=ui.LayoutView(UserDemotedContainer(user, interaction.user, tier-1, reason), timeout=0))
+            await user.send(view=ui.LayoutView(timeout=0).add_item(UserDemotedContainer(user, interaction.user, tier-1, reason), timeout=0))
             await interaction.response.send_message("`{}` demoted successfully for: `{}`".format(user.display_name, reason if reason is not None else "No reason provided."), ephemeral=True)
         except Exception as e:
             log_exc(self._logger, e)
