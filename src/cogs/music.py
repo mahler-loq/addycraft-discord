@@ -47,7 +47,7 @@ class Music(commands.Cog):
         await interaction.response.defer()
         self._log("play command invoked with query: {}".format(query))
         #~ begin block early return
-        if interaction.guild.voice_client is None:
+        if interaction.user.voice is None:
             return await interaction.followup.send("You must be in a voice channel to use this command.",ephemeral=True)
         vc = interaction.user.voice.channel
         if interaction.guild.voice_client is not None:
