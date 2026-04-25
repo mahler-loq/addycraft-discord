@@ -2,9 +2,9 @@ from discord.ext import commands
 import os, dotenv, discord, logging, glob, traceback, asyncio, config
 import src.cnst as cnst
 import src.helpers as helpers
+from fixedstr import *
 from config import *
 rootl = logging.getLogger()
-COG_GLOB = "./src/cogs/*.py"
 class Bot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="NOPREFIX",intents=discord.Intents.all(),help_command=None) # .all() will be changed, this is for testing

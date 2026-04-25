@@ -23,6 +23,3 @@ admin_role_ids = [1451037130049716295, 1476330523726053376]
 mod_role_ids = [1451038256958275594, 1451282482480807981]
 helper_role_ids = [1451038323027214377, 1451282482480807980]
 #FORMAT: tiername_role_ids = [staff_server_role_id, main_server_role_id]
-
-noperm = "You do not have permission to use this command."
-noperm_generic = "You do not have permission to perform this action."

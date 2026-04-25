@@ -1,0 +1,6 @@
+load_s="loaded successfully!"
+COG_GLOB = "./src/cogs/*.py"
+no_vcl="I'm not connected to a voice channel in this server."
+err="An error occurred."
+noperm = "You do not have permission to use this command."
+noperm_generic = "You do not have permission to perform this action."

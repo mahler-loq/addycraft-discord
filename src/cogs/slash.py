@@ -2,6 +2,7 @@ import traceback
 from discord.ext import commands
 from discord import app_commands
 import os, dotenv, discord, logging, discord.ui as ui
+from fixedstr import *
 from src.helpers import *
 from src.cnst import *
 import src.bot_class as bot_class
@@ -200,7 +201,7 @@ class BasicSlashCommands(commands.Cog):
 async def setup(bot):
     cog = BasicSlashCommands(bot)
     await bot.add_cog(cog)
-    cog._log("loaded successfully!")
+    cog._log(load_s)
 
 ##DEVNOTES:
 ## .format() and ondef type annotations are NOT used in an attempt to be

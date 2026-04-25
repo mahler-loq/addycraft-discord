@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord import FFmpegOpusAudio, app_commands
 import os, dotenv, discord, asyncio, logging, yt_dlp, ffmpeg
 from src import bot_class
+from fixedstr import *
 from src.cnst import *
 from collections import deque
 def _extract(query:str, ytdlp_opts:dict):
@@ -90,7 +91,7 @@ class Music(commands.Cog):
         voice_client = interaction.guild.voice_client
         #~ begin block early return
         if voice_client is None:
-            return await interaction.response.send_message("I'm not connected to a voice channel in this server.",ephemeral=True)
+            return await interaction.response.send_message(no_vcl,ephemeral=True)
         if not voice_client.is_playing():
             return await interaction.response.send_message("No song is currently playing.",ephemeral=True)
         #~ finish block early return
@@ -101,7 +102,7 @@ class Music(commands.Cog):
         voice_client = interaction.guild.voice_client
         #~ begin block early return
         if voice_client is None:
-            return await interaction.response.send_message("I'm not connected to a voice channel in this server.",ephemeral=True)
+            return await interaction.response.send_message(no_vcl,ephemeral=True)
         if not voice_client.is_paused():
             return await interaction.response.send_message("No song is currently paused.",ephemeral=True)
         #~ finish block early return
@@ -123,7 +124,7 @@ class Music(commands.Cog):
         voice_client = interaction.guild.voice_client
         #~ begin block early return
         if not voice_client:
-            return await interaction.followup.send("I'm not connected to a voice channel in this server.",ephemeral=True)
+            return await interaction.followup.send(no_vcl,ephemeral=True)
         #~ finish block early return
         if interaction.guild_id in self.queues:
             self.queues[interaction.guild_id].clear()
@@ -136,7 +137,7 @@ class Music(commands.Cog):
         voice_client = interaction.guild.voice_client
         #~ begin block early return
         if not voice_client:
-            return await interaction.followup.send("I'm not connected to a voice channel in this server.",ephemeral=True)
+            return await interaction.followup.send(no_vcl,ephemeral=True)
         #~ finish block early return
         if interaction.guild_id in self.queues:
             self.queues[interaction.guild_id].clear()
@@ -147,7 +148,7 @@ class Music(commands.Cog):
 async def setup(bot):
     cog = Music(bot)
     await bot.add_cog(cog)
-    cog._log("loaded successfully!")
+    cog._log(load_s)
 
 ##DEVNOTES:
 ## .format() and ondef type annotations are NOT used in an attempt to be

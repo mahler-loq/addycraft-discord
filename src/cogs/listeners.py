@@ -2,6 +2,7 @@ from discord.ext import commands
 import os, dotenv, discord, logging
 from src.cnst import *
 from src.helpers import *
+from fixedstr import *
 from config import *
 import src.bot_class as bot_class
 class MainCustomizedEventListener(commands.Cog):

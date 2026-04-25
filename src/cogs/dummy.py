@@ -1,7 +1,7 @@
 from discord.ext import commands
 import os, dotenv, discord, logging
 from src import bot_class
-
+from fixedstr import *
 class DummyCog(commands.Cog):
     def __init__(self, bot:bot_class.Bot):
         self.bot = bot
@@ -12,7 +12,7 @@ class DummyCog(commands.Cog):
 async def setup(bot):
     cog = DummyCog(bot)
     await bot.add_cog(cog)
-    cog._log("loaded successfully!")
+    cog._log(load_s)
 
 # This file is meant to be a template for new cogs. It doesn't do anything by design, only makes my life easier so i don't
 # have to rewrite the same code every time i create a functionality cog.
