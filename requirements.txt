@@ -4,4 +4,3 @@ pynacl
 davey
 yt-dlp
 ffmpeg-python
-ffmpeg
