@@ -30,7 +30,7 @@ class Music(commands.Cog):
         self._logger.info(msg)
     async def search_youtube(self, query:str):
         return await(asyncio.get_running_loop()).run_in_executor(None, _extract, query, self.ytdlp_opts)
-    async def broadcast_queue_update(self, message:str, guild_id:int):
+    async def broadcast_queue_update(self, message:str, id:int):
         message="[**{}**] {}".format(self.bot.get_guild(id).name if self.bot.get_guild(id) else "Unknown server", message)
         await asyncio.gather(*[self.bot.get_channel(id).send(message)for id in music_queue_channel_ids if self.bot.get_channel(id)],return_exceptions=True)
     async def play_next(self, voice_client:discord.VoiceClient, guild_id:int):
