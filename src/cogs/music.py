@@ -23,7 +23,7 @@ class Music(commands.Cog):
             "options": "-vn -c:a libopus -b:a 96k"
         }
         self.queues = {}
-        self._logger = logging.Logger(self.__class__.__name__, logging.INFO)
+        self._logger = logging.getLogger(self.__class__.__name__)
     def _log(self, msg:str):
         self._logger.info(msg)
     async def search_youtube(self, query:str):

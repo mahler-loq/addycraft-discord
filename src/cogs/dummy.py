@@ -5,7 +5,7 @@ from src import bot_class
 class DummyCog(commands.Cog):
     def __init__(self, bot:bot_class.Bot):
         self.bot = bot
-        self._logger = logging.Logger(self.__class__.__name__, logging.INFO)
+        self._logger = logging.getLogger(self.__class__.__name__)
     def _log(self, msg:str):
         self._logger.info(msg)
 
