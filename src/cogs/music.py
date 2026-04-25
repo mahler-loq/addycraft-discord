@@ -19,10 +19,11 @@ class Music(commands.Cog):
             "youtube_include_hls_manifest": False,
             "nocheckcertificate": True,
             "quiet": True,
+            "no_warnings": True
         }
         self.ffmpeg_opts = {
             "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
-            "options": "-vn -c:a libopus -b:a 96k"
+            "options": "-vn -c:a libopus -b:a 96k -loglevel quiet"
         }
         self.queues = {}
         self._logger = logging.getLogger(self.__class__.__name__)
