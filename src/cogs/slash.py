@@ -59,6 +59,7 @@ class UserDemotedContainer(ui.Container):
         self.add_item(ui.Separator())
         self.add_item(ui.TextDisplay(content="We regret to inform you that you have been demoted to `{}` by {}.\n\nReason:\n{}".format(tier_to_name(self.new), self.author.mention, self.reason if self.reason is not None else "No reason provided.")))
 class BasicSlashCommands(commands.Cog):
+    staff=app_commands.Group(name="staff",description="Commands to manage the staff team")
     def __init__(self, bot:bot_class.Bot):
         self.bot = bot
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -67,7 +68,7 @@ class BasicSlashCommands(commands.Cog):
     @app_commands.command(name="announce", description="Sends an announcement to the specified channel, optionally pinging a role.")
     async def announce(self, interaction: discord.Interaction, channel: discord.TextChannel, title: str, text: str, ping: discord.Role = None):
         #~ begin block early return
-        if not is_god(interaction.user):
+        if not is_administrative(interaction.user):
             return await interaction.response.send_message(noperm, ephemeral=True)
         #~ finish block early return
         try:
@@ -77,7 +78,7 @@ class BasicSlashCommands(commands.Cog):
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while sending the announcement.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
-    @app_commands.command(name="hire", description="Hires a user as a helper.")
+    @staff.command(name="hire", description="Hires a user as a helper.")
     async def hire(self, interaction: discord.Interaction, user: discord.Member):
         #~ begin block early return
         if not is_administrative(interaction.user):
@@ -94,7 +95,7 @@ class BasicSlashCommands(commands.Cog):
             log_exc(self._logger, e)
             return await interaction.response.send_message("An error occurred while hiring the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
         await interaction.response.send_message("`{}` hired successfully! Make sure to remember to manually give them their `Helper` rank when they join the staff server.".format(user.display_name), ephemeral=True)
-    @app_commands.command(name="fire", description="Fires a user from their staff position.")
+    @staff.command(name="fire", description="Fires a user from their staff position.")
     async def fire(self, interaction: discord.Interaction, user: discord.Member, reason: str = None):
         #~ begin block early return
         if not is_administrative(interaction.user):
@@ -116,7 +117,7 @@ class BasicSlashCommands(commands.Cog):
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while firing the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
-    @app_commands.command(name="promote", description="Promotes a staff member to the next tier.")
+    @staff.command(name="promote", description="Promotes a staff member to the next tier.")
     async def promote(self, interaction: discord.Interaction, user: discord.Member, reason: str = None):
         #~ begin block early return
         if not is_administrative(interaction.user):
@@ -141,7 +142,7 @@ class BasicSlashCommands(commands.Cog):
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while promoting the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
-    @app_commands.command(name="demote", description="Demotes a staff member to the previous tier.")
+    @staff.command(name="demote", description="Demotes a staff member to the previous tier.")
     async def demote(self, interaction: discord.Interaction, user: discord.Member, reason: str = None):
         #~ begin block early return
         if not is_administrative(interaction.user):
