@@ -114,7 +114,7 @@ class Music(commands.Cog):
             self.queues[interaction.guild_id].clear()
         if voice_client.is_playing() or voice_client.is_paused():
             voice_client.stop()
-        await interaction.followup.send("Stopped playback, use `/leave` to disconnect me from the voice channel.")
+        await interaction.followup.send("Stopped playback.")
     @music.command(name="leave", description="Disconnects the bot from the voice channel")
     async def leave(self, interaction:discord.Interaction):
         await interaction.response.defer()
