@@ -2,3 +2,6 @@ discord
 dotenv
 pynacl
 davey
+yt-dlp
+ffmpeg-python
+ffmpeg
