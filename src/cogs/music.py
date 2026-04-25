@@ -16,7 +16,8 @@ class Music(commands.Cog):
             "noplaylist": True,
             "youtube_include_dash_manifest": False,
             "youtube_include_hls_manifest": False,
-            'nocheckcertificate': True
+            "nocheckcertificate": True,
+            "quiet": True,
         }
         self.ffmpeg_opts = {
             "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
