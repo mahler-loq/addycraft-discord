@@ -15,7 +15,8 @@ class Music(commands.Cog):
             "format": "bestaudio[abr<=96]/bestaudio",
             "noplaylist": True,
             "youtube_include_dash_manifest": False,
-            "youtube_include_hls_manifest": False
+            "youtube_include_hls_manifest": False,
+            'nocheckcertificate': True
         }
         self.ffmpeg_opts = {
             "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
