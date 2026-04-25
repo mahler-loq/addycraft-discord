@@ -50,7 +50,7 @@ class Music(commands.Cog):
         if interaction.user.voice is None:
             return await interaction.followup.send("You must be in a voice channel to use this command.",ephemeral=True)
         vc = interaction.user.voice.channel
-        if interaction.guild.voice_client is not None:
+        if interaction.guild.voice_client is None:
             voice_client = await vc.connect()
         elif interaction.guild.voice_client.channel != vc:
             return await interaction.response.send_message("I'm already connected to a voice channel in this server, please use the /leave command to disconnect me from it first.",ephemeral=True)
