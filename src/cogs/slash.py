@@ -178,12 +178,13 @@ class BasicSlashCommands(commands.Cog):
             return await interaction.response.send_message("Please specify an amount between 1 and 100.", ephemeral=True)
         #~ finish block early return
         try:
+            interaction.response.defer()
             await interaction.channel.purge(limit=amount)
-            await interaction.response.send_message("Cleared `{}` messages successfully!".format(amount), ephemeral=True)
+            await interaction.followup.send("Cleared `{}` messages successfully!".format(amount), ephemeral=True)
             self._log("{} cleared {} messages from #{} ({})".format(interaction.user.display_name, amount, interaction.channel.name, interaction.guild.id))
         except Exception as e:
             log_exc(self._logger, e)
-            await interaction.response.send_message("An error occurred while clearing messages.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
+            await interaction.followup.send("An error occurred while clearing messages.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
     @app_commands.command(name="whoami", description="Shows information about you, or someone else.")
     async def whoami(self, interaction: discord.Interaction, user: discord.Member=None):
         try:

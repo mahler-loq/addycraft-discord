@@ -26,6 +26,8 @@ rootl.addHandler(handler)
 rootl.setLevel(logging.INFO)
 logging.getLogger("discord.client").setLevel(logging.WARNING)
 logging.getLogger("discord.gateway").setLevel(logging.WARNING)
+logging.getLogger("discord").setLevel(logging.WARNING)
+logging.getLogger("discord.app_commands.tree").setLevel(logging.CRITICAL)
 if __name__ == "__main__":
     rootl.info("INFO")
     rootl.warning("WARNING")
