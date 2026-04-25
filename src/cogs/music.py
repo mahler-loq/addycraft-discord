@@ -46,10 +46,10 @@ class Music(commands.Cog):
     async def play(self, interaction:discord.Interaction, query:str):
         await interaction.response.defer()
         self._log("play command invoked with query: {}".format(query))
-        vc = interaction.user.voice.channel
         #~ begin block early return
         if vc is None:
             return await interaction.followup.send("You must be in a voice channel to use this command.",ephemeral=True)
+        vc = interaction.user.voice.channel
         if interaction.guild.voice_client is not None:
             voice_client = await vc.connect()
         elif interaction.guild.voice_client.channel != vc:
