@@ -26,8 +26,8 @@ rootl.addHandler(handler)
 rootl.setLevel(logging.INFO)
 for name in logging.root.manager.loggerDict:
     if name.startswith("discord"):
-        logging.getLogger(name).setLevel(logging.CRITICAL)
-logging.getLogger("discord.app_commands.tree").setLevel(logging.CRITICAL)
+        logging.getLogger(name).setLevel(logging.INFO)
+logging.getLogger("discord.app_commands.tree").setLevel(logging.INFO)
 if __name__ == "__main__":
     rootl.info("INFO")
     rootl.warning("WARNING")
