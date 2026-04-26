@@ -6,6 +6,18 @@ from fixedstr import *
 from src.helpers import *
 from src.cnst import *
 import src.bot_class as bot_class
+class BoloContainer(ui.Container):
+    def __init__(self, ign:str, user_id:int, username:str, author:int, reason:str):
+        super().__init__()
+        self.add_item(ui.TextDisplay(content="# New BOLO Published"))
+        self.add_item(ui.Separator())
+        self.add_item(ui.TextDisplay(content="A new bolo has been published by {}".format(author)))
+        self.add_item(ui.Separator())
+        self.add_item(ui.TextDisplay(content="In Game Name of the Offender: `{}`".format(ign)))
+        self.add_item(ui.TextDisplay(content="Discord Username of the Offender: `{}`".format(username)))
+        self.add_item(ui.TextDisplay(content="Discord User ID of the Offender: `{}`".format(user_id)))
+        self.add_item(ui.Separator())
+        self.add_item("Reason: {}".format(reason if reason else "No reason provided."))
 class SeparatedTextContainer(ui.Container):
     def __init__(self, title:str, text:str, ping:discord.Role|discord.User=None, author:str=None):
         super().__init__()
@@ -197,7 +209,19 @@ class BasicSlashCommands(commands.Cog):
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while fetching your information.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
-
+    @app_commands.command(name="bolo", description="Report a user to the be-on-the-lookout channel.")
+    async def bolo(self, interaction: discord.Interaction, ign: str, username: str, id: str, reason: str = ""):
+        #~ begin block early return
+        if not is_moderator(interaction.user):
+            return await interaction.response.send_message(noperm, ephemeral=True)
+        #~ finish block early return
+        try:
+            await interaction.response.defer()
+            await(self.bot.get_channel(bolo_channel_id)).send(view=ui.LayoutView(timeout=0).add_item(BoloContainer(ign, id, username, interaction.user.mention, reason)))
+            await interaction.followup.send("New BOLO created successfully.", ephemeral=True)
+        except Exception as e:
+            log_exc(self._logger, e)
+            await interaction.followup.send("An error occurred while creating the BOLO.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
 async def setup(bot):
     cog = BasicSlashCommands(bot)
     await bot.add_cog(cog)

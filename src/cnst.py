@@ -18,6 +18,7 @@ music_queue_channel_ids = [1234, 1234]
 
 staff_entry_channel_id = 1234
 mainserver_entry_channel_id = 1234
+bolo_channel_id = 1234
 
 owner_role_ids = [1234, 1234]
 admin_role_ids = [1234, 1234]
