@@ -16,7 +16,6 @@ class Music(commands.Cog):
         self.bot = bot
         self.ytdlp_opts = {
             "cookiefile": "/addycraft-discord/cookies.txt",
-            "format": "bestaudio/best",
             "noplaylist": True,
             "youtube_include_dash_manifest": False,
             "youtube_include_hls_manifest": False,
