@@ -53,7 +53,6 @@ class Music(commands.Cog):
             self.queues[guild_id] = deque()
     @music.command(name="play", description="Plays a song from youtube")
     async def play(self, interaction:discord.Interaction, query:str):
-        await interaction.response.defer()
         self._log("play command invoked with query: {}".format(query))
         #~ begin block early return
         if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
@@ -65,6 +64,7 @@ class Music(commands.Cog):
         elif interaction.guild.voice_client.channel != vc:
             return await interaction.response.send_message("I'm already connected to a voice channel in this server, please use the /leave command to disconnect me from it first.",ephemeral=True)
         #~ finish block early return
+        await interaction.response.defer()
         query="ytsearch1:{}".format(query)
         results = await self.search_youtube(query)
         tracks = results.get("entries", [])
@@ -129,10 +129,10 @@ class Music(commands.Cog):
         await interaction.response.send_message("Current queue:\n{}".format(msg))
     @music.command(name="stop", description="Leaves the voice channel and clears the queue")
     async def stop(self, interaction:discord.Interaction):
-        await interaction.response.defer()
         voice_client = interaction.guild.voice_client
         #~ begin block early return
         if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        await interaction.response.defer()
         if not voice_client:
             return await interaction.followup.send(no_vcl,ephemeral=True)
         #~ finish block early return
@@ -143,11 +143,10 @@ class Music(commands.Cog):
         await interaction.followup.send("Stopped playback.")
     @music.command(name="leave", description="Disconnects the bot from the voice channel")
     async def leave(self, interaction:discord.Interaction):
-        await interaction.response.defer()
         voice_client = interaction.guild.voice_client
         #~ begin block early return
         if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
-
+        else:await interaction.response.defer()
         if not voice_client:
             return await interaction.followup.send(no_vcl,ephemeral=True)
         #~ finish block early return
