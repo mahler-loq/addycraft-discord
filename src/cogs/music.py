@@ -4,8 +4,8 @@ import os, dotenv, discord, asyncio, logging, yt_dlp, ffmpeg
 from src import bot_class
 from fixedstr import *
 from src.cnst import *
+from src.helpers import PermissionTier as pt, log_exc, codeblock_wrap
 from collections import deque
-from src.helpers import *
 def _extract(query:str, ytdlp_opts:dict):
     with yt_dlp.YoutubeDL(ytdlp_opts) as ytdlp:
         return ytdlp.extract_info(query, download=False)
@@ -54,8 +54,9 @@ class Music(commands.Cog):
     @music.command(name="play", description="Plays a song from youtube")
     async def play(self, interaction:discord.Interaction, query:str):
         self._log("play command invoked with query: {}".format(query))
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         if interaction.user.voice is None:
             return await interaction.followup.send("You must be in a voice channel to use this command.",ephemeral=True)
         vc = interaction.user.voice.channel
@@ -84,8 +85,9 @@ class Music(commands.Cog):
             await self.play_next(voice_client, interaction.guild_id)
     @music.command(name="skip", description="Skips the currently playing song")
     async def skip(self, interaction:discord.Interaction):
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         #~ finish block early return
         if interaction.guild.voice_client and (interaction.guild.voice_client.is_playing() or interaction.guild.voice_client.is_paused()):
             interaction.guild.voice_client.stop()
@@ -95,8 +97,9 @@ class Music(commands.Cog):
     @music.command(name="pause", description="Pauses the currently playing song")
     async def pause(self, interaction:discord.Interaction):
         voice_client = interaction.guild.voice_client
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         if voice_client is None:
             return await interaction.response.send_message(no_vcl,ephemeral=True)
         if not voice_client.is_playing():
@@ -107,8 +110,9 @@ class Music(commands.Cog):
     @music.command(name="resume", description="Resumes a paused song")
     async def resume(self, interaction:discord.Interaction):
         voice_client = interaction.guild.voice_client
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         if voice_client is None:
             return await interaction.response.send_message(no_vcl,ephemeral=True)
         if not voice_client.is_paused():
@@ -119,7 +123,8 @@ class Music(commands.Cog):
     @music.command(name="queue", description="Shows the current music queue")
     async def queue(self, interaction: discord.Interaction):
         gid = interaction.guild_id
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        ptu = pt(interaction.user)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         if gid not in self.queues or not self.queues[gid]:
             return await interaction.response.send_message("The queue is currently empty.", ephemeral=True)
         queue = list(self.queues[gid])
@@ -130,8 +135,9 @@ class Music(commands.Cog):
     @music.command(name="stop", description="Leaves the voice channel and clears the queue")
     async def stop(self, interaction:discord.Interaction):
         voice_client = interaction.guild.voice_client
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         await interaction.response.defer()
         if not voice_client:
             return await interaction.followup.send(no_vcl,ephemeral=True)
@@ -144,8 +150,9 @@ class Music(commands.Cog):
     @music.command(name="leave", description="Disconnects the bot from the voice channel")
     async def leave(self, interaction:discord.Interaction):
         voice_client = interaction.guild.voice_client
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         else:await interaction.response.defer()
         if not voice_client:
             return await interaction.followup.send(no_vcl,ephemeral=True)
@@ -159,8 +166,9 @@ class Music(commands.Cog):
     @music.command(name="volume",description="Sets/gets the default playback volume for this server.")
     async def volume(self,interaction:discord.Interaction,vol:int=None):
         voice_client = interaction.guild.voice_client
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_dj(interaction.user):return await interaction.response.send_message(no_dj,ephemeral=True)
+        if not ptu.dj:return await interaction.response.send_message(no_dj,ephemeral=True)
         else:await interaction.response.defer()
         if not voice_client:
             return await interaction.followup.send(no_vcl,ephemeral=True)

@@ -1,5 +1,5 @@
 from discord.ext import commands
-import os, dotenv, discord, logging, aiosqlite
+import os, dotenv, discord, logging, aiosqlite, hashlib
 os.makedirs("/data/",exist_ok=True) #too much never hurts!
 from src import bot_class
 from fixedstr import *
@@ -19,6 +19,20 @@ class DatabaseModule(commands.Cog):
     async def volume_get(self,gid:int):
         row = await(await self.db.execute("SELECT value FROM music_vol WHERE guild = ?",(gid,))).fetchone()
         return row[0] if row else 100
+    async def kv_bl_exists(self,uid:int):
+        row = await(await self.db.execute("SELECT value FROM kv_blacklist WHERE userid = ?",(uid,))).fetchone()
+        return bool(row)
+    async def kv_bl_setdata(self,uid:int,data:bytes):
+        await self.db.execute("INSERT INTO kv_blacklist(userid,value)VALUES(?,?)",(uid,data))
+    async def kv_bl_getdata(self,uid:int):
+        row = await(await self.db.execute("SELECT value FROM kv_blacklist WHERE userid = ?",(uid,))).fetchone()
+        return row[0] if row else b""
+    async def kv_bl_del(self,uid:int):
+        await self.db.execute("DELETE FROM kv_blacklist WHERE userid = ?",(uid,))
+    async def kv_bl_hash(self,uid:int):
+        row = await(await self.db.execute("SELECT value FROM kv_blacklist WHERE userid = ?",(uid,))).fetchone()
+        data = row[0] if row else b""
+        return hashlib.md5(data).hexdigest()
 
 async def setup(bot):
     os.makedirs("/data/",exist_ok=True)

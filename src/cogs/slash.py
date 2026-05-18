@@ -1,11 +1,33 @@
-import traceback
+import traceback,io
 from discord.ext import commands
 from discord import app_commands
 import os, dotenv, discord, logging, discord.ui as ui
 from fixedstr import *
-from src.helpers import *
+from src.helpers import PermissionTier as pt, log_exc, codeblock_wrap, fresh
 from src.cnst import *
 import src.bot_class as bot_class
+class WhoAmIContainer(ui.Container):
+    def __init__(self, user:discord.Member, advanced:bool=False):
+        super().__init__()
+        self.ptt = pt(user)
+        self.user = user
+        self.advanced = advanced
+    async def setup(self):
+        self.add_item(ui.TextDisplay(content="## Information for {}".format(self.user.mention)))
+        self.add_item(ui.Separator())
+        self.add_item(ui.TextDisplay(content="Your display name: **{}**".format(self.user.display_name)))
+        self.add_item(ui.TextDisplay(content="Your Discord ID: **{}**".format(self.user.id)))
+        self.add_item(ui.TextDisplay(content="Your In-game name: **{}**".format(PCD)))
+        self.add_item(ui.TextDisplay(content="Staff Member: **{}**".format("Yes" if self.ptt.staff else "No")))
+        if self.advanced:
+            self.add_item(ui.Separator())
+            self.add_item(ui.TextDisplay(content="Your permission tier: **{} [{}]**".format(self.ptt.name, self.ptt.value)))
+            self.add_item(ui.TextDisplay(content="Internal Developer: **{}**".format("Yes" if self.ptt.DEV else "No")))
+            self.add_item(ui.TextDisplay(content="Special Tiers: **{}**".format(self.ptt.special_pretty)))
+            if await self.bot.get_cog("DatabaseModule").kv_bl_exists(self.user.id):
+                self.add_item(ui.Separator())
+                self.add_item(ui.TextDisplay(content="**Special Data**"))
+                self.add_item(ui.File("attachment://{}.bin".format(await self.bot.get_cog("DatabaseModule").kv_bl_hash(self.user.id))))
 class BoloContainer(ui.Container):
     def __init__(self, ign:str, user_id:int, username:str, author:int, reason:str):
         super().__init__()
@@ -60,7 +82,7 @@ class UserPromotedContainer(ui.Container):
         self.reason = reason
         self.add_item(ui.TextDisplay(content="### Staff Position Promoted"))
         self.add_item(ui.Separator())
-        self.add_item(ui.TextDisplay(content="Congratulations, {}!\n\nYou have been promoted to `{}` by {}.\n\nReason:\n{}".format(self.user.mention, tier_to_name(self.new), self.author.mention, self.reason if self.reason is not None else "No reason provided.")))
+        self.add_item(ui.TextDisplay(content="Congratulations, {}!\n\nYou have been promoted to `{}` by {}.\n\nReason:\n{}".format(self.user.mention, pt.ttn(self.new), self.author.mention, self.reason if self.reason is not None else "No reason provided.")))
 class UserDemotedContainer(ui.Container):
     def __init__(self, user:discord.Member, author:discord.Member, new:int, reason:str):
         super().__init__()
@@ -70,7 +92,7 @@ class UserDemotedContainer(ui.Container):
         self.reason = reason
         self.add_item(ui.TextDisplay(content="### Staff Position Demoted"))
         self.add_item(ui.Separator())
-        self.add_item(ui.TextDisplay(content="We regret to inform you that you have been demoted to `{}` by {}.\n\nReason:\n{}".format(tier_to_name(self.new), self.author.mention, self.reason if self.reason is not None else "No reason provided.")))
+        self.add_item(ui.TextDisplay(content="We regret to inform you that you have been demoted to `{}` by {}.\n\nReason:\n{}".format(pt.ttn(self.new), self.author.mention, self.reason if self.reason is not None else "No reason provided.")))
 class BasicSlashCommands(commands.Cog):
     staff=app_commands.Group(name="staff",description="Commands to manage the staff team")
     def __init__(self, bot:bot_class.Bot):
@@ -80,8 +102,9 @@ class BasicSlashCommands(commands.Cog):
         self._logger.info(msg)
     @app_commands.command(name="announce", description="Sends an announcement to the specified channel, optionally pinging a role.")
     async def announce(self, interaction: discord.Interaction, channel: discord.TextChannel, title: str, text: str, ping: discord.Role = None):
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_administrative(interaction.user):
+        if not ptu.administrative:
             return await interaction.response.send_message(noperm, ephemeral=True)
         #~ finish block early return
         try:
@@ -93,10 +116,12 @@ class BasicSlashCommands(commands.Cog):
             await interaction.response.send_message("An error occurred while sending the announcement.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
     @staff.command(name="hire", description="Hires a user as a helper.")
     async def hire(self, interaction: discord.Interaction, user: discord.Member):
+        ptu = pt(interaction.user)
+        ptt = pt(user)
         #~ begin block early return
-        if not is_administrative(interaction.user):
+        if not ptu.sr_administrative:
             return await interaction.response.send_message(noperm, ephemeral=True)
-        if is_staff(user):
+        if ptt.staff:
             return await interaction.response.send_message("User is already apart of staff, perhaps you meant to `/promote` them?", ephemeral=True)
         #~ finish block early return
         try:
@@ -110,13 +135,15 @@ class BasicSlashCommands(commands.Cog):
         await interaction.response.send_message("`{}` hired successfully! Make sure to remember to manually give them their `Helper` rank when they join the staff server.".format(user.display_name), ephemeral=True)
     @staff.command(name="fire", description="Fires a user from their staff position.")
     async def fire(self, interaction: discord.Interaction, user: discord.Member, reason: str = None):
+        ptu = pt(interaction.user)
+        ptt = pt(user)
         #~ begin block early return
-        if not is_administrative(interaction.user):
+        if not ptu.sr_administrative:
             return await interaction.response.send_message(noperm, ephemeral=True)
-        if is_administrative(user) and not is_god(interaction.user):
+        if ptt.sr_administrative:
             return await interaction.response.send_message("You cannot fire this user, they are at a higher or equal staff rank than you.", ephemeral=True)
-        if is_not_staff(user) and not is_helper_strict(user):
-            return await interaction.response.send_message("You cannot fire this user, they are currently not a staff member.", ephemeral=True)
+        if ptt.nstaff:
+            return await interaction.response.send_message("You cannot fire this user as they are currently not a staff member.", ephemeral=True)
         #~ finish block early return
         try:
             self._log("{} fired {}".format(interaction.user.display_name, user.display_name))
@@ -132,51 +159,73 @@ class BasicSlashCommands(commands.Cog):
             await interaction.response.send_message("An error occurred while firing the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
     @staff.command(name="promote", description="Promotes a staff member to the next tier.")
     async def promote(self, interaction: discord.Interaction, user: discord.Member, reason: str = None):
+        ptu = pt(interaction.user)
+        ptt = pt(user)
         #~ begin block early return
-        if not is_administrative(interaction.user):
+        if not ptu.sr_administrative:
             return await interaction.response.send_message(noperm, ephemeral=True)
-        if is_administrative(user):
+        if ptt.sr_administrative:
             return await interaction.response.send_message("You cannot promote this user, they are already at the highest permission tier they may attain.", ephemeral=True)
-        if is_not_staff(user):
+        if ptt.nstaff:
             return await interaction.response.send_message("You cannot promote this user, they are currently not a staff member, perhaps you want to `/hire` them?", ephemeral=True)
+        if not ptu.owner and ptt.administrative:
+            return await interaction.response.send_message("You cannot promote this user, they are at a higher or equal staff rank than you.", ephemeral=True)
         #~ finish block early return
         try:
-            tier = determine_permission_tier(user)
-            self._log("{} promoted {} to {} (tier {})".format(interaction.user.display_name, user.display_name, tier_to_name(tier+1), tier+1))
-            if tier == 3:
+            tier = ptt.tier
+            self._log("{} promoted {} to {} (tier {})".format(interaction.user.display_name, user.display_name, pt.ttn(tier+1), tier+1))
+            if tier == 5:
                 for idx,server in enumerate((staff_server_id,main_server_id)):
                     await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Promoted to moderator by {}".format(interaction.user.display_name))
                     await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(helper_role_ids[idx]), reason="Promoted from helper by {}".format(interaction.user.display_name))
-            elif tier == 2:
+            elif tier == 4:
+                for idx,server in enumerate((staff_server_id,main_server_id)):
+                    await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(sr_mod_role_ids[idx]), reason="Promoted to sr. mod by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Promoted from moderator by {}".format(interaction.user.display_name))
+            elif tier == 3:
                 for idx,server in enumerate((staff_server_id,main_server_id)):
                     await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(admin_role_ids[idx]), reason="Promoted to admin by {}".format(interaction.user.display_name))
-                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Promoted from moderator by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(sr_mod_role_ids[idx]), reason="Promoted from sr. mod by {}".format(interaction.user.display_name))
+            elif tier == 2:
+                for idx,server in enumerate((staff_server_id,main_server_id)):
+                    await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(sr_admin_role_ids[idx]), reason="Promoted to sr. admin by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(admin_role_ids[idx]), reason="Promoted from admin by {}".format(interaction.user.display_name))
             await user.send(view=ui.LayoutView(timeout=0).add_item(UserPromotedContainer(user, interaction.user, tier+1, reason), timeout=0))
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while promoting the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
     @staff.command(name="demote", description="Demotes a staff member to the previous tier.")
     async def demote(self, interaction: discord.Interaction, user: discord.Member, reason: str = None):
+        ptu = pt(interaction.user)
+        ptt = pt(user)
         #~ begin block early return
-        if not is_administrative(interaction.user):
+        if not ptu.sr_administrative:
             return await interaction.response.send_message(noperm, ephemeral=True)
-        if is_administrative(user) and not is_god(interaction.user):
+        if not ptu.owner and ptt.sr_administrative:
             return await interaction.response.send_message("You cannot demote this user, they are at a higher or equal staff rank than you.", ephemeral=True)
-        if is_not_staff(user):
+        if ptt.nstaff:
             return await interaction.response.send_message("You cannot demote this user, they are currently not a staff member.", ephemeral=True)
-        if is_helper_strict(user):
+        if ptt.helper:
             return await interaction.response.send_message("You cannot demote this user, they are already at the lowest staff rank possible, perhaps you wanted to `/fire` them?", ephemeral=True)
         #~ finish block early return
         try:
-            tier = determine_permission_tier(user)
-            self._log("{} demoted {} to {} (tier {})".format(interaction.user.display_name, user.display_name, tier_to_name(tier-1), tier-1))
+            tier = ptt.tier
+            self._log("{} demoted {} to {} (tier {})".format(interaction.user.display_name, user.display_name, pt.ttn(tier-1), tier-1))
             if tier == 1:
                 for idx,server in enumerate((staff_server_id,main_server_id)):
-                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(admin_role_ids[idx]), reason="Demoted from admin by {}".format(interaction.user.display_name))
-                    await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Demoted to moderator by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(sr_admin_role_ids[idx]), reason="Demoted from sr. admin by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(admin_role_ids[idx]), reason="Demoted to admin by {}".format(interaction.user.display_name))
             elif tier == 2:
                 for idx,server in enumerate((staff_server_id,main_server_id)):
-                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Demoted from moderator by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(admin_role_ids[idx]), reason="Demoted from admin by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(sr_mod_role_ids[idx]), reason="Demoted to sr. mod by {}".format(interaction.user.display_name))
+            elif tier == 3:
+                for idx,server in enumerate((staff_server_id,main_server_id)):
+                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(sr_mod_role_ids[idx]), reason="Demoted from sr. mod by {}".format(interaction.user.display_name))
+                    await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Demoted to mod by {}".format(interaction.user.display_name))
+            elif tier == 4:
+                for idx,server in enumerate((staff_server_id,main_server_id)):
+                    await (self.bot.get_guild(server).get_member(user.id)).remove_roles(interaction.guild.get_role(mod_role_ids[idx]), reason="Demoted from mod by {}".format(interaction.user.display_name))
                     await (self.bot.get_guild(server).get_member(user.id)).add_roles(interaction.guild.get_role(helper_role_ids[idx]), reason="Demoted to helper by {}".format(interaction.user.display_name))
             await user.send(view=ui.LayoutView(timeout=0).add_item(UserDemotedContainer(user, interaction.user, tier-1, reason), timeout=0))
             await interaction.response.send_message("`{}` demoted successfully for: `{}`".format(user.display_name, reason if reason is not None else "No reason provided."), ephemeral=True)
@@ -185,34 +234,39 @@ class BasicSlashCommands(commands.Cog):
             await interaction.response.send_message("An error occurred while demoting the user.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
     @app_commands.command(name="purge", description="Clears a specified number of messages from the current channel.")
     async def purge(self, interaction: discord.Interaction, amount: int):
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_moderator(interaction.user):
+        if ptu.nstaff:
             return await interaction.response.send_message(noperm, ephemeral=True)
-        if amount < 1 or amount > 100:
-            return await interaction.response.send_message("Please specify an amount between 1 and 100.", ephemeral=True)
+        maxi = 100 if ptu.moderative else 25
+        maxi += 400 if ptu.administrative else 0
+        maxi += 500 if ptu.owner else 0
+        if amount < 1 or amount > maxi:
+            return await interaction.response.send_message("The `amount` parameter must be between 1 and {}.".format(maxi), ephemeral=True)
         #~ finish block early return
         try:
             interaction.response.defer()
-            await interaction.channel.purge(limit=amount)
+            await interaction.channel.purge(limit=amount,check=fresh)
             await interaction.followup.send("Cleared `{}` messages successfully!".format(amount), ephemeral=True)
             self._log("{} cleared {} messages from #{} ({})".format(interaction.user.display_name, amount, interaction.channel.name, interaction.guild.id))
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.followup.send("An error occurred while clearing messages.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
     @app_commands.command(name="whoami", description="Shows information about you, or someone else.")
-    async def whoami(self, interaction: discord.Interaction, user: discord.Member=None):
+    async def whoami(self, interaction: discord.Interaction, user: discord.Member=None, advanced: bool=False):
         try:
-            if user is None:
-                user = interaction.user
-            message = "Your display name: `{}`\nYour ID: `{}`\nYour permission tier: `{} ({})`".format(user.display_name, user.id, tier_to_name(determine_permission_tier(user)), determine_permission_tier(user))
-            await interaction.response.send_message(message, ephemeral=True)
+            if advanced:
+                await interaction.response.send_message(view=ui.LayoutView(WhoAmIContainer(user,advanced)),ephemeral=True,file=discord.File(io.BytesIO(await self.bot.get_cog("DatabaseModule").kv_bl_getdata(user.id)), filename="{}.bin".format(await self.bot.get_cog("DatabaseModule").kv_bl_hash(user.id))))
+            else:
+                await interaction.response.send_message(view=ui.LayoutView(WhoAmIContainer(user,advanced)),ephemeral=True)
         except Exception as e:
             log_exc(self._logger, e)
             await interaction.response.send_message("An error occurred while fetching your information.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
     @app_commands.command(name="bolo", description="Report a user to the be-on-the-lookout channel.")
     async def bolo(self, interaction: discord.Interaction, ign: str, username: str, id: str, reason: str = ""):
+        ptu = pt(interaction.user)
         #~ begin block early return
-        if not is_moderator(interaction.user):
+        if ptu.moderative:
             return await interaction.response.send_message(noperm, ephemeral=True)
         #~ finish block early return
         try:
