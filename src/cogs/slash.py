@@ -6,6 +6,18 @@ from fixedstr import *
 from src.helpers import PermissionTier as pt, log_exc, codeblock_wrap, fresh
 from src.cnst import *
 import src.bot_class as bot_class
+class RankRequestContainer(ui.Container):
+    def __init__(self, author:discord.Member, rank:int, message:str):
+        super().__init__()
+        self.author = author
+        self.rank = rank
+        self.message = message
+        self.add_item(ui.TextDisplay(content="## New Rank Request"))
+        self.add_item(ui.Separator())
+        self.add_item(ui.TextDisplay(content="{} is requesting a <@&{}> for help.".format(self.author.mention, self.rank)))
+        self.add_item(ui.TextDisplay(content="Reason for the request: **{}**".format(self.message)))
+        self.add_item(ui.Separator())
+        self.add_item(ui.TextDisplay(content="Requested at: <t:{}:f>".format(int(discord.utils.utcnow().timestamp()))))
 class WhoAmIContainer(ui.Container):
     def __init__(self, user:discord.Member, advanced:bool=False):
         super().__init__()
@@ -31,7 +43,7 @@ class WhoAmIContainer(ui.Container):
 class BoloContainer(ui.Container):
     def __init__(self, ign:str, user_id:int, username:str, author:int, reason:str):
         super().__init__()
-        self.add_item(ui.TextDisplay(content="# New BOLO Published"))
+        self.add_item(ui.TextDisplay(content="## New BOLO Published"))
         self.add_item(ui.Separator())
         self.add_item(ui.TextDisplay(content="A new bolo has been published by {}".format(author)))
         self.add_item(ui.Separator())
@@ -49,7 +61,7 @@ class SeparatedTextContainer(ui.Container):
         if ping is not None:
             self.add_item(ui.TextDisplay(content=self.ping))
             self.add_item(ui.Separator())
-        self.add_item(ui.TextDisplay(content="### "+self.title))
+        self.add_item(ui.TextDisplay(content="## "+self.title))
         self.add_item(ui.TextDisplay(content=self.text))
         if author is not None:
             self.add_item(ui.Separator())
@@ -60,7 +72,7 @@ class UserHiredContainer(ui.Container):
         self.user = user
         self.author = author
         self.url = url
-        self.add_item(ui.TextDisplay(content="### Application approved!"))
+        self.add_item(ui.TextDisplay(content="## Application approved!"))
         self.add_item(ui.Separator())
         self.add_item(ui.TextDisplay(content="""Congratulations, {}\n\nYour application has been approved by {}. Thank you so much for your consideration in joining the staff team and we really look forward to working with you. Below will be a link to our Staff Discord Server.""".format(self.user.mention, self.author.mention)))
         self.add_item(ui.Separator())
@@ -70,7 +82,7 @@ class UserFiredContainer(ui.Container):
         super().__init__()
         self.user = user
         self.author = author
-        self.add_item(ui.TextDisplay(content="### Staff Position Terminated"))
+        self.add_item(ui.TextDisplay(content="## Staff Position Terminated"))
         self.add_item(ui.Separator())
         self.add_item(ui.TextDisplay("""We regret to inform you that your position on the staff team has been terminated by {}.\n\nReason:\n{}\n\nIf you have any questions regarding this decision, please feel free to reach out to any of the current staff members for more information.""".format(self.author.mention, reason if reason is not None else "No reason provided.")))
 class UserPromotedContainer(ui.Container):
@@ -80,7 +92,7 @@ class UserPromotedContainer(ui.Container):
         self.author = author
         self.new = new
         self.reason = reason
-        self.add_item(ui.TextDisplay(content="### Staff Position Promoted"))
+        self.add_item(ui.TextDisplay(content="## Staff Position Promoted"))
         self.add_item(ui.Separator())
         self.add_item(ui.TextDisplay(content="Congratulations, {}!\n\nYou have been promoted to `{}` by {}.\n\nReason:\n{}".format(self.user.mention, pt.ttn(self.new), self.author.mention, self.reason if self.reason is not None else "No reason provided.")))
 class UserDemotedContainer(ui.Container):
@@ -90,7 +102,7 @@ class UserDemotedContainer(ui.Container):
         self.author = author
         self.new = new
         self.reason = reason
-        self.add_item(ui.TextDisplay(content="### Staff Position Demoted"))
+        self.add_item(ui.TextDisplay(content="## Staff Position Demoted"))
         self.add_item(ui.Separator())
         self.add_item(ui.TextDisplay(content="We regret to inform you that you have been demoted to `{}` by {}.\n\nReason:\n{}".format(pt.ttn(self.new), self.author.mention, self.reason if self.reason is not None else "No reason provided.")))
 class BasicSlashCommands(commands.Cog):
@@ -148,7 +160,7 @@ class BasicSlashCommands(commands.Cog):
         #~ finish block early return
         try:
             self._log("{} fired {}".format(interaction.user.display_name, user.display_name))
-            await user.remove_roles(*[interaction.guild.get_role(role_id) for role_id in helper_role_ids+mod_role_ids+admin_role_ids+owner_role_ids], reason="Fired from staff by {}".format(interaction.user.display_name))
+            await user.remove_roles(*[interaction.guild.get_role(role_id) for role_id in all_staff_role_ids], reason="Fired from staff by {}".format(interaction.user.display_name))
             await user.send(view=ui.LayoutView(timeout=0).add_item(UserFiredContainer(user, interaction.user, reason)))
             try:await (self.bot.get_guild(staff_server_id)).kick(user, reason="Fired from staff by {}".format(interaction.user.display_name))
             except Exception as e:
@@ -287,7 +299,19 @@ class BasicSlashCommands(commands.Cog):
         app_commands.Choice(name="Owner", value=owner_role_ids[0])
     ])
     async def request(self, interaction: discord.Interaction, rank: app_commands.Choice[int], message: str):
-        return await interaction.response.send_message(PCD,ephemeral=True) # TODO: implement this command
+        #~ begin block early return
+        if not pt(interaction.user).nstaff:
+            return await interaction.response.send_message(noperm, ephemeral=True)
+        #~ finish block early return
+        try:
+            cont = RankRequestContainer(interaction.user, rank.value, message)
+            msg = await self.bot.get_channel(staff_requests_channel_id).send(view=ui.LayoutView(timeout=0).add_item(cont))
+            thr = await msg.create_thread(auto_archive_duration=10080, name="Request from {}".format(interaction.user.display_name))
+            await thr.send("The tagged rank and all other members of staff who are interested to discuss this request may do so here.")
+            await interaction.response.send_message("Your request has been submitted to the requests channel.", ephemeral=True)
+        except Exception as e:
+            log_exc(self._logger, e)
+            await interaction.response.send_message("An error occurred while submitting your request.\n"+codeblock_wrap(traceback.format_exception(e)), ephemeral=True)
 
 async def setup(bot):
     cog = BasicSlashCommands(bot)

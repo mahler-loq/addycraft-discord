@@ -21,6 +21,8 @@ mainserver_entry_channel_id = 1476358868018659429
 
 bolo_channel_id = 1496237433971544238
 
+staff_requests_channel_id = 1505348660115017738
+
 owner_role_ids = [1451282482493395126,1451036920619466862]
 sr_admin_role_ids = [1451282482480807984,1451038062258688105]
 admin_role_ids = [1234,1234]
@@ -31,6 +33,9 @@ dj_role_ids = [1497742878628384940,1488303234581008574]
 developer_role_ids = [1477336375769694392,1451282482480807983]
 builder_role_ids = [1466218224319201377,1451282482480807982]
 artist_role_ids = [1234,1234]
+
+all_staff_role_ids = owner_role_ids+sr_admin_role_ids+admin_role_ids+sr_mod_role_ids+mod_role_ids+helper_role_ids
+
 paid_rank_role_ids = {
     1234: 1234
 }

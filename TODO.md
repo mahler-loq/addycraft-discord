@@ -5,6 +5,9 @@
 - [x] finish README.md
 - [x] dev commands
 - [ ] db audit
+    - [x] table
+    - [] struct
+    - [] commands & code
 - [ ] commands
-    - [ ] `/team request <rank> <message>`
+    - [x] `/team request <rank> <message>`
     - adzel put something else here plsss :3
