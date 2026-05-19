@@ -6,5 +6,5 @@
 - [x] dev commands
 - [ ] db audit
 - [ ] commands
-    - [ ] /team request <rank> <message>
+    - [ ] `/team request <rank> <message>`
     - adzel put something else here plsss :3
